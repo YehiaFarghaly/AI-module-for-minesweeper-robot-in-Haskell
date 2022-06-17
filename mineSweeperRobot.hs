@@ -56,9 +56,13 @@ solve cell list =  constructSolution (search [(S cell list "" Null)])
 
 
 -- Or to work on any grid size :
+manhattan (x1,y1) (x2,y2) = abs(x1 - x2) + abs(y1 - y2)
+searchForNearest h [] curdis curitem = curitem
+searchForNearest h (x:xs) curdis curitem = if otherdis < curdis then searchForNearest h xs otherdis x else searchForNearest h xs curdis curitem  where otherdis = manhattan h x
+goto (x,y) (x1,y1) = if (x==x1 && y==y1) then ["collect"]
+			else if (x/=x1) then if x < x1 then "down":goto ((x+1),y) (x1,y1)
+					     else "up":goto ((x-1),y) (x1,y1)
+			else if (y < y1) then "right":goto (x,(y+1)) (x1,y1)
+			else "left" : goto (x,(y-1)) (x1,y1)
 solve2 (x,y) [] = []
-solve2 (x,y) ((x1,y1):all) = if (x==x1 && y==y1) then "collect":solve2 (x,y) all
-			else if (x/=x1) then if x < x1 then "down":solve2 ((x+1),y) ((x1,y1):all)
-					     else "up":solve2 ((x-1),y) ((x1,y1):all)
-			else if (y < y1) then "right":solve2 (x,(y+1)) ((x1,y1):all)
-			else "down" : solve2 (x,(y-1)) ((x1,y1):all)
+solve2 startpos (x:xs) = (goto startpos target) ++ (solve2 target (delete target (x:xs))) where target = searchForNearest startpos xs
